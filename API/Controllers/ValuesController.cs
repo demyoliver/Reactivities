@@ -21,6 +21,7 @@ namespace API.Controllers
             _context = context;
         }
 
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Value>>> Get()
         {
             var values = await _context.Values.ToListAsync();
