@@ -29,11 +29,14 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add DataContext as DI to the Startup for data persistence. DataContext will hold the entities and can
+            // manipulate database on different events such as OnModelCreation
             services.AddDbContext<DataContext>(opt =>
             {
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
             
+            // Add CORS policy since front-end will have a different url call the API which is not allowed via CORS
             services.AddCors(opt =>
             {
                 opt.AddPolicy("CorsPolicy", policy =>
@@ -42,6 +45,7 @@ namespace API
                 });
             });
 
+            // Add MediatR assembly 
             services.AddMediatR(typeof(List.Query).Assembly);
 
             services.AddControllers();

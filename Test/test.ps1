@@ -1,0 +1,2 @@
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput="./TestResults/"
+coverlet C:\Learnings\ReactJSLearning\Reactivities\Test\bin\Debug\netcoreapp3.0\test.dll --target "dotnet" --targetargs "test C:\Learnings\ReactJSLearning\Reactivities\Test --no-build" --output "C:\coverlet\domain-integration-coverage" --format json
