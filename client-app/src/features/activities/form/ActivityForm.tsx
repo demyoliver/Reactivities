@@ -1,21 +1,19 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useContext } from 'react';
 import { Segment, Form, Button } from 'semantic-ui-react';
 import { IActivity } from '../../../app/model/activity';
 import {v4 as uuid} from 'uuid'
+import { observer } from 'mobx-react-lite';
+import ActivityStore from '../../../app/stores/activityStore';
 
 interface IProps {
-    setEditMode: (editMode: boolean) => void;
     activity: IActivity;
-    createActivity: (activity: IActivity) => void;
-    editActivity: (activity: IActivity) => void;
-    submitting: boolean
 }
 
-const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialFormState, createActivity, editActivity, submitting }) => {
+const ActivityForm: React.FC<IProps> = ({ activity: initialActivityState }) => {
 
-    const initializeForm = () => {
-        if (initialFormState) {
-            return initialFormState;
+    const initialActivity = () => {        
+        if (initialActivityState) {
+            return initialActivityState;
         } else {
             return {
                 id: '',
@@ -29,7 +27,9 @@ const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialFormStat
         }
     }
 
-    const [activity, setActivity] = useState<IActivity>(initializeForm)
+    const activityStore = useContext(ActivityStore);
+    const { createActivity, setEditMode, submitting, editActivity } = activityStore;
+    const [activity, setActivity] = useState<IActivity>(initialActivity)    
 
     const handleInputChange = (event: FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.currentTarget;
@@ -37,7 +37,7 @@ const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialFormStat
     }
 
     const handleSubmit = () => {
-        if(activity.id.length ===0) {
+        if(activity.id.length === 0) {
             let newActivity = {
                 ...activity,
                 id: uuid()
@@ -64,4 +64,4 @@ const ActivityForm: React.FC<IProps> = ({ setEditMode, activity: initialFormStat
     )
 }
 
-export default ActivityForm
+export default observer(ActivityForm)
