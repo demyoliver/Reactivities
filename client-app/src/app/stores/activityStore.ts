@@ -1,4 +1,4 @@
-import { observable, action, computed } from 'mobx';
+import { observable, action, computed, runInAction } from 'mobx';
 import { IActivity } from '../model/activity';
 import { createContext, SyntheticEvent } from 'react';
 import agent from '../api/agent';
@@ -7,7 +7,7 @@ class ActivityStore {
     @observable activities: IActivity[] = [];
     @observable activityRegisty = new Map();
     @observable loadingInitial = false;
-    @observable selectedActivity: IActivity | undefined;
+    @observable activity: IActivity | null = null;
     @observable editMode = false;
     @observable submitting = false;  
     @observable target = '';
@@ -31,7 +31,7 @@ class ActivityStore {
     }       
 
     @action selectActivity = (id: string) => {
-        this.selectedActivity = this.activityRegisty.get(id);
+        this.activity = this.activityRegisty.get(id);
     }
 
     @action setEditMode = (editMode: boolean) => {
@@ -56,7 +56,7 @@ class ActivityStore {
             this.submitting = true;
             await agent.Activities.update(activity);
             this.activityRegisty.set(activity.id, activity);      
-            this.selectedActivity = activity;
+            this.activity = activity;
             this.editMode = false;
             this.submitting = false;
         }
@@ -71,8 +71,7 @@ class ActivityStore {
             this.submitting = true;
             await agent.Activities.delete(id);
             this.activityRegisty.delete(id);      
-            this.selectedActivity = undefined;
-            //this.editMode = false;
+            this.activity = null;            
             this.submitting = false;
         }
         catch (error) {
@@ -80,20 +79,27 @@ class ActivityStore {
         }
     }
 
-    @action openCreateForm = () => {
-        this.selectedActivity = undefined; 
-        this.editMode = true;   
+    @action loadActivity = async (id: string) => {        
+        let activity = this.activityRegisty.get(id);
+        if (activity) {
+            this.activity = activity;
+        } else {
+            try {
+                this.loadingInitial = true;
+                this.activity = await agent.Activities.details(id);
+                this.loadingInitial = false;                
+            } catch (error) {
+                runInAction('get activity error', () => {
+                    this.loadingInitial = false;
+                })
+                console.log(error);                
+            }
+        }        
     }
 
-    @action openEditForm = (activity: IActivity) => {
-        this.selectedActivity = activity; 
-        this.editMode = true;   
-    }
-
-    @action cancelSelectedActivity = () => {
-        this.selectedActivity = undefined;
-        this.editMode = false;
-    }
+    @action clearActivity = () => {
+        this.activity = null;
+    }        
 }
 
 export default createContext(new ActivityStore());
